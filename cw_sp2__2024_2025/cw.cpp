@@ -21,7 +21,7 @@
 
 #include "src/include/cli/cli.h"
 bool reSetDefaultInputFileName_ = 
-strcpy(parameters[INPUT_FILENAME_PARAMETER], "../test_programs/file1.cwl")
+strcpy(parameters[INPUT_FILENAME_PARAMETER], "../test_programs/file1.b03")
 != NULL;
 #include "src/include/lexica/lexica.h"
 
@@ -42,10 +42,6 @@ int main(int argc, char* argv[]) {
 		//return 0;
 #endif
 
-#ifdef	USE_PREDEFINED_PARAMETERS
-	mode = DEFAULT_MODE;
-	char text[MAX_TEXT_SIZE] = PREDEFINED_TEXT;
-#else
 	comandLineParser(argc, argv, &mode, parameters);
 	char* text;
 	size_t sourceSize = loadSource(&text, parameters[INPUT_FILENAME_PARAMETER]);
@@ -54,7 +50,6 @@ int main(int argc, char* argv[]) {
 		(void)getchar();
 		return 0;
 	}
-#endif
 
 	if (!(mode & LEXICAL_ANALISIS_MODE)) {
 		printf("NO SUPORTED MODE ...\r\n");
