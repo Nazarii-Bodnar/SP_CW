@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -166,6 +166,7 @@
     <ClCompile Include="src\implementation\generator\not.cpp" />
     <ClCompile Include="src\implementation\generator\not_equal.cpp" />
     <ClCompile Include="src\implementation\generator\null_statement.cpp" />
+    <ClCompile Include="src\implementation\generator\objectcodegen_pattern.cpp" />
     <ClCompile Include="src\implementation\generator\operand.cpp" />
     <ClCompile Include="src\implementation\generator\or.cpp" />
     <ClCompile Include="src\implementation\generator\output.cpp" />
@@ -220,7 +221,24 @@
     <ClInclude Include="src\include\syntax\syntax.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\test_programs\file1.b03" />
+    <None Include="..\test_programs\file1.cwl" />
+    <None Include="..\test_programs\file1_ki308.cwl" />
+    <None Include="..\test_programs\file2.cwl" />
+    <None Include="..\test_programs\file2_ki308.cwl" />
+    <None Include="..\test_programs\file3.cwl" />
+    <None Include="..\test_programs\file3_ki308.cwl" />
+    <None Include="..\test_programs\file4.cwl" />
+    <None Include="..\test_programs\file4_.cwl" />
+    <None Include="..\test_programs\file4_ki308.cwl" />
+    <None Include="..\test_programs\file4_ki308_.cwl" />
+    <None Include="..\test_programs\file5.cwl" />
+    <None Include="..\test_programs\file5_.cwl" />
+    <None Include="..\test_programs\file5_ki308.cwl" />
+    <None Include="..\test_programs\file5_ki308_.cwl" />
+    <None Include="..\test_programs\file6.cwl" />
+    <None Include="..\test_programs\file6_ki308.cwl" />
+    <None Include="..\test_programs\file7.cwl" />
+    <None Include="..\test_programs\file7_ki308.cwl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

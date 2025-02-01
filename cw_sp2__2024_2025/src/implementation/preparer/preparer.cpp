@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 /************************************************************
-* N.Kozak // Lviv'2024 // lex  +  rpn  +  MACHINECODEGEN!   *
+* N.Kozak // Lviv'2024-2025 // cw_sp2__2024_2025            *
 *                         file: preparer.hxx                *
 *                                                  (draft!) *
 *************************************************************/
@@ -9,14 +9,15 @@
 
 #include "../../../src/include/def.h"
 #include "../../../src/include/config.h"
-#include "../../../src/include/generator/generator.h"
 #include "../../../src/include/lexica/lexica.h"
+#include "../../../src/include/syntax/syntax.h"
+#include "../../../src/include/semantix/semantix.h"
+#include "../../../src/include/generator/generator.h"
 #include "stdio.h"
 #include "stdlib.h"
 #include "string.h"
 
 int precedenceLevel(char* lexemStr) {
-	//printf("TODO: (in precedenceLevel)\r\n");
 	if (!strncmp(lexemStr, tokenStruct[MULTI_TOKEN_BITWISE_NOT][0], MAX_LEXEM_SIZE)) {		
 		return 6;
 	}
@@ -172,13 +173,17 @@ bool isSplittingOperator(char* lexemStr) {
 
 void makePrepare4IdentifierOrValue(struct LexemInfo** lastLexemInfoInTable, struct LexemInfo** lastTempLexemInfoInTable) { // 
 	if ((*lastLexemInfoInTable)->tokenType == IDENTIFIER_LEXEME_TYPE || (*lastLexemInfoInTable)->tokenType == VALUE_LEXEME_TYPE) {
+		int prevNonOpenParenthesesIndex = -1;
+		for (; !strncmp((*lastLexemInfoInTable)[prevNonOpenParenthesesIndex].lexemStr, "(", MAX_LEXEM_SIZE); --prevNonOpenParenthesesIndex);
 		if (!strncmp((*lastLexemInfoInTable)[1].lexemStr, tokenStruct[MULTI_TOKEN_RLBIND][0], MAX_LEXEM_SIZE)
 			||
 			!strncmp((*lastLexemInfoInTable)[-1].lexemStr, tokenStruct[MULTI_TOKEN_LRBIND][0], MAX_LEXEM_SIZE)
 			||
-			!strncmp((*lastLexemInfoInTable)[-1].lexemStr, tokenStruct[MULTI_TOKEN_INPUT][0], MAX_LEXEM_SIZE)
-			||
-			!strncmp((*lastLexemInfoInTable)[-2].lexemStr, tokenStruct[MULTI_TOKEN_INPUT][0], MAX_LEXEM_SIZE)
+			//!strncmp((*lastLexemInfoInTable)[-1].lexemStr, tokenStruct[MULTI_TOKEN_INPUT][0], MAX_LEXEM_SIZE)
+			//||
+			//!strncmp((*lastLexemInfoInTable)[-2].lexemStr, tokenStruct[MULTI_TOKEN_INPUT][0], MAX_LEXEM_SIZE)
+			//||
+			!strncmp((*lastLexemInfoInTable)[prevNonOpenParenthesesIndex].lexemStr, tokenStruct[MULTI_TOKEN_INPUT][0], MAX_LEXEM_SIZE)
 			) {
 			bool findComplete = false;
 			for (unsigned long long int index = 0; identifierIdsTable[index][0] != '\0'; ++index) {
@@ -338,9 +343,36 @@ unsigned long long int getNextEndOfExpressionIndex(struct LexemInfo* lexemInfoIn
 
 void makePrepare(struct LexemInfo* lexemInfoInTable, struct LexemInfo** lastLexemInfoInTable, struct LexemInfo** lastTempLexemInfoInTable) {
 	unsigned long long int nullStatementIndex = 0;
+	unsigned long long int passMakePrepareElementCount = getDataSectionLastLexemIndex(*lastLexemInfoInTable, &grammar);
+	if (passMakePrepareElementCount++ == ~0) {
+		printf("Error: bad section!\r\n");
+		exit(0);
+	}
+
+//	*lastLexemInfoInTable += lastDataSectionLexemIndex;
+//	while (lastDataSectionLexemIndex--) {
+//	
+//	}
+//
+//	for (; false && (*lastLexemInfoInTable)->lexemStr[0] != '\0'; *(*lastTempLexemInfoInTable)++ = *(*lastLexemInfoInTable)++) {
+//		if (passMakePrepareElementCount) {
+//			--passMakePrepareElementCount;
+//			++lexemInfoInTable;
+//			continue;
+//		}
+//		else {
+//			break;
+//		}
+//	}
 
 	lexemInfoTransformationTempStackSize = 0;
 	for (; (*lastLexemInfoInTable)->lexemStr[0] != '\0'; *(*lastTempLexemInfoInTable)++ = *(*lastLexemInfoInTable)++) {
+		if (passMakePrepareElementCount) {
+			--passMakePrepareElementCount;
+			++lexemInfoInTable;
+			continue;
+		}
+
 		for (struct LexemInfo* lastLexemInfoInTable_ = NULL; lastLexemInfoInTable_ != *lastLexemInfoInTable;) {
 
 			lastLexemInfoInTable_ = *lastLexemInfoInTable;
@@ -358,7 +390,7 @@ void makePrepare(struct LexemInfo* lexemInfoInTable, struct LexemInfo** lastLexe
 				&& (!nullStatementIndex || (lexemInfoInTable + nullStatementIndex == lastLexemInfoInTable_))) {
 				if (nullStatementIndex != ~0) {
 					if (nullStatementIndex) {
-						printf("Added null statement after %lld(lexem index)\r\n", nullStatementIndex);
+//						printf("Added null statement after %lld(lexem index)\r\n", nullStatementIndex);
 						makePrepareEnder(lastLexemInfoInTable, lastTempLexemInfoInTable);
 						(void)createMultiToken(lastTempLexemInfoInTable, MULTI_TOKEN_NULL_STATEMENT);
 					}
@@ -374,7 +406,7 @@ void makePrepare(struct LexemInfo* lexemInfoInTable, struct LexemInfo** lastLexe
 		if ((!nullStatementIndex || (lexemInfoInTable + nullStatementIndex == *lastLexemInfoInTable))) {
 			if (nullStatementIndex != ~0) {
 				if (nullStatementIndex) {
-					printf("Added null statement after %lld(lexem index)\r\n", nullStatementIndex);
+//					printf("Added null statement after %lld(lexem index)\r\n", nullStatementIndex);
 					makePrepareEnder(lastLexemInfoInTable, lastTempLexemInfoInTable);
 					(void)createMultiToken(lastTempLexemInfoInTable, MULTI_TOKEN_NULL_STATEMENT);
 				}

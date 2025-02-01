@@ -1,11 +1,19 @@
+#define _CRT_SECURE_NO_WARNINGS
+/************************************************************
+* N.Kozak // Lviv'2024-2025 // cw_sp2__2024_2025            *
+*                         file: config.h                    *
+*                                                  (draft!) *
+*************************************************************/
+
 #include "../include/def.h"
-#define LEXICAL_ANALISIS_MODE 1
-#define SEMANTIC_ANALISIS_MODE 2
-#define FULL_COMPILER_MODE 4
+//#define LEXICAL_ANALISIS_MODE 1
+//#define SEMANTIC_ANALISIS_MODE 2
+//#define FULL_COMPILER_MODE 4
 
-#define DEBUG_MODE 512
+//#define DEBUG_MODE 512
 
-#define DEFAULT_MODE (LEXICAL_ANALISIS_MODE | DEBUG_MODE)
+//#define DEFAULT_MODE (DEBUG_MODE | LEXICAL_ANALISIS_MODE)
+//#define DEFAULT_MODE (DEBUG_MODE | LEXICAL_ANALISIS_MODE | SYNTAX_ANALISIS_MODE | SEMANTIC_ANALISIS_MODE | MAKE_ASSEMBLY | MAKE_BINARY)
 
 
 #define TOKENS_RE         ";|<-|->|\\+|-|\\Mul|,|Eq|Ne|:|\\(|\\)|<<|>>|[_0-9A-Za-z]+|[^ \t\r\f\v\n]"
@@ -17,11 +25,11 @@
 // first column of the cw term paper option
 #define PROGRAM_FORMAT \
 {"tokenNAME__program_name", 2, {"tokenNAME","program_name"}},\
-{"tokenSEMICOLON__tokenBODY", 2, {"tokenSEMICOLON","tokenBODY"}},\
-{"tokenDATA__declaration", 2, {"tokenDATA","declaration"}},\
-{"tokenNAME__program_name__tokenSEMICOLON", 2, {"tokenNAME__program_name","tokenSEMICOLON"}},\
-{"data_tokenBODY", 2, {"tokenDATA__declaration","tokenBODY"}},\
-{"program____part1", 2, {"tokenNAME__program_name__tokenSEMICOLON","data_tokenBODY"}},\
+{"tokenSEMICOLON__tokenDATA", 2, {"tokenSEMICOLON","tokenDATA"}},\
+{"declaration__tokenBODY", 2, {"declaration","tokenBODY"}},\
+{"tokenNAME__program_name__tokenSEMICOLON__tokenDATA", 2, {"tokenNAME__program_name","tokenSEMICOLON__tokenDATA"}},\
+{"program____part1", 2, {"tokenNAME__program_name__tokenSEMICOLON__tokenDATA","declaration__tokenBODY"}},\
+{"program____part1", 2, {"tokenNAME__program_name__tokenSEMICOLON__tokenDATA","tokenBODY"}},\
 {"statement__tokenEND", 2, {"statement","tokenEND"}},\
 {"statement____iteration_after_two__tokenEND", 2, {"statement____iteration_after_two","tokenEND"}},\
 {"program____part2", 2, {"tokenSEMICOLON","statement____iteration_after_two__tokenEND"}},\
@@ -80,11 +88,11 @@
 #define T_NOT_EQUAL_1 ""
 #define T_NOT_EQUAL_2 ""
 #define T_NOT_EQUAL_3 ""
-#define T_LESS_0 "<!"
+#define T_LESS_0 "<<"
 #define T_LESS_1 ""
 #define T_LESS_2 ""
 #define T_LESS_3 ""
-#define T_GREATER_0 ">!"
+#define T_GREATER_0 ">>"
 #define T_GREATER_1 ""
 #define T_GREATER_2 ""
 #define T_GREATER_3 ""
@@ -182,7 +190,7 @@
 #define T_EXIT_WHILE_1 "While" 
 #define T_EXIT_WHILE_2 "" 
 #define T_EXIT_WHILE_3 ""
-#define T_END_WHILE_0 "end"
+#define T_END_WHILE_0 "End"
 #define T_END_WHILE_1 "While"
 #define T_END_WHILE_2 ""
 #define T_END_WHILE_3 ""
@@ -264,9 +272,7 @@ DECLENUM(TokenStructName,
 	MULTI_TOKEN_GOTO,
 
 	MULTI_TOKEN_IF,
-	//	MULTI_TOKEN_IF_, // don't change this!
 	MULTI_TOKEN_THEN,
-	//	MULTI_TOKEN_THEN_, // don't change this!
 	MULTI_TOKEN_ELSE,
 
 	MULTI_TOKEN_FOR,
@@ -306,9 +312,6 @@ DECLENUM(TokenStructName,
 	MULTI_TOKEN_NULL_STATEMENT
 );
 
-//#define PROCESS_TOKENS(...) HANDLE_TOKENS(__VA_ARGS__)
-//#define TOKENS_FOR_MULTI_TOKEN(A, B, C, D) A, B, C, D
-//#define TOKENS_FOR_MULTI_TOKEN_BITWISE_NOT TOKENS_FOR_MULTI_TOKEN("~", "", "", "")
 #define INIT_TOKEN_STRUCT_NAME() static void intitTokenStruct(){\
 SET_QUADRUPLE_STR_MACRO_IN_ARRAY(tokenStruct, BITWISE_NOT)\
 SET_QUADRUPLE_STR_MACRO_IN_ARRAY(tokenStruct, BITWISE_AND)\
@@ -451,7 +454,7 @@ extern char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMEN
         {"continue_while", 2, {"tokenCONTINUE","tokenWHILE"}},\
         {"exit_while", 2, {"tokenEXIT","tokenWHILE"}},\
         {"tokenWHILE__expression", 2, {"tokenWHILE","expression"}},\
-        {"tokenEND__tokenWHILE", 2, {"tokenEND","tokenWHILE"}},\
+        {"tokenEND__tokenWHILE", 2, {"tokenENDWHILE_END","tokenENDWHILE_WHILE"}},\
         {"tokenWHILE__expression__statement_in_while_body", 2, {"tokenWHILE__expression","statement_in_while_body"}},\
         {"tokenWHILE__expression__statement_in_while_body____iteration_after_two", 2, {"tokenWHILE__expression","statement_in_while_body____iteration_after_two"}},\
         {"while_cycle", 2, {"tokenWHILE__expression__statement_in_while_body____iteration_after_two","tokenEND__tokenWHILE"}},\
@@ -541,6 +544,8 @@ extern char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMEN
         {"tokenWHILE", 1, {T_WHILE_0}},\
         {"tokenCONTINUE", 1, {T_CONTINUE_WHILE_0}},\
         {"tokenEXIT", 1, {T_EXIT_WHILE_0}},\
+        {"tokenENDWHILE_END", 1, {T_END_WHILE_0}},\
+        {"tokenENDWHILE_WHILE", 1, {T_END_WHILE_1}},\
         {"tokenREPEAT", 1, {T_REPEAT_0}},\
         {"tokenUNTIL", 1, {T_UNTIL_0}},\
         {"tokenGET", 1, {T_INPUT_0}},\
@@ -557,14 +562,14 @@ extern char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMEN
 \
         {"", 2, {"",""}}\
 },\
-176,\
+178,\
 "program"
 
 #define ORIGINAL_GRAMMAR {\
     {"labeled_point", 2, {"ident", "tokenCOLON"}},\
     {"goto_label", 2, {"tokenGOTO","ident"}},\
     {"program_name", 1, {"ident_terminal"}},\
-    {"value_type", 1, {"Int16"}},\
+    {"value_type", 1, {"INTEGER16"}},\
     {"other_declaration_ident", 2, {"tokenCOMMA", "ident"}},\
     {"other_declaration_ident____iteration_after_one", 2, {"other_declaration_ident","other_declaration_ident____iteration_after_one"}},\
     {"other_declaration_ident____iteration_after_one", 2, {"tokenCOMMA", "ident"}},\
@@ -572,20 +577,20 @@ extern char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMEN
     {"declaration", 2, {"value_type__ident", "other_declaration_ident____iteration_after_one"}},\
     {"declaration", 2, {"value_type", "ident"}},\
 \
-    {"unary_operator", 1, {"!"}},\
+    {"unary_operator", 1, {"NOT"}},\
     {"unary_operator", 1, {"-"}},\
     {"unary_operator", 1, {"+"}},\
-    {"binary_operator", 1, {"And"}},\
-    {"binary_operator", 1, {"Or"}},\
-    {"binary_operator", 1, {"Eq"}},\
-    {"binary_operator", 1, {"Ne"}},\
-    {"binary_operator", 1, {"<<"}},\
-    {"binary_operator", 1, {">>"}},\
+    {"binary_operator", 1, {"AND"}},\
+    {"binary_operator", 1, {"OR"}},\
+    {"binary_operator", 1, {"=="}},\
+    {"binary_operator", 1, {"!="}},\
+    {"binary_operator", 1, {"<="}},\
+    {"binary_operator", 1, {">="}},\
     {"binary_operator", 1, {"+"}},\
     {"binary_operator", 1, {"-"}},\
-    {"binary_operator", 1, {"Mul"}},\
-    {"binary_operator", 1, {"Div"}},\
-    {"binary_operator", 1, {"Mod"}},\
+    {"binary_operator", 1, {"*"}},\
+    {"binary_operator", 1, {"DIV"}},\
+    {"binary_operator", 1, {"MOD"}},\
     {"binary_action", 2, {"binary_operator","expression"}},\
 \
     {"left_expression", 2, {"tokenGROUPEXPRESSIONBEGIN__expression","tokenGROUPEXPRESSIONEND"}},\
@@ -713,41 +718,41 @@ extern char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMEN
     {"program", 2, {"program____part1","program____part2"}},\
 \
     {"tokenCOLON", 1, {":"}},\
-    {"tokenGOTO", 1, {"Goto"}},\
-    {"tokenINTEGER16", 1, {"Int16"}},\
+    {"tokenGOTO", 1, {"GOTO"}},\
+    {"tokenINTEGER16", 1, {"INTEGER16"}},\
     {"tokenCOMMA", 1, {","}},\
-    {"tokenNOT", 1, {"!"}},\
-    {"tokenAND", 1, {"And"}},\
-    {"tokenOR", 1, {"Or"}},\
-    {"tokenEQUAL", 1, {"Eq"}},\
-    {"tokenNOTEQUAL", 1, {"Ne"}},\
-    {"tokenLESSOREQUAL", 1, {"<<"}},\
-    {"tokenGREATEROREQUAL", 1, {">>"}},\
+    {"tokenNOT", 1, {"NOT"}},\
+    {"tokenAND", 1, {"AND"}},\
+    {"tokenOR", 1, {"OR"}},\
+    {"tokenEQUAL", 1, {"=="}},\
+    {"tokenNOTEQUAL", 1, {"!="}},\
+    {"tokenLESSOREQUAL", 1, {"<="}},\
+    {"tokenGREATEROREQUAL", 1, {">="}},\
     {"tokenPLUS", 1, {"+"}},\
     {"tokenMINUS", 1, {"-"}},\
-    {"tokenMUL", 1, {"Mul"}},\
-    {"tokenDIV", 1, {"Div"}},\
-    {"tokenMOD", 1, {"Mod"}},\
+    {"tokenMUL", 1, {"*"}},\
+    {"tokenDIV", 1, {"DIV"}},\
+    {"tokenMOD", 1, {"MOD"}},\
     {"tokenGROUPEXPRESSIONBEGIN", 1, {"("}},\
     {"tokenGROUPEXPRESSIONEND", 1, {")"}},\
-    {"tokenRLBIND", 1, {"<-"}},\
-    {"tokenLRBIND", 1, {"->"}},\
-    {"tokenELSE", 1, {"else"}},\
-    {"tokenIF", 1, {"If"}},\
-    {"tokenDO", 1, {"Do"}},\
-    {"tokenFOR", 1, {"For"}},\
-    {"tokenTO", 1, {"To"}},\
-    {"tokenWHILE", 1, {"While"}},\
-    {"tokenCONTINUE", 1, {"Continue"}},\
-    {"tokenEXIT", 1, {"Exit"}},\
-    {"tokenREPEAT", 1, {"Repeat"}},\
-    {"tokenUNTIL", 1, {"Until"}},\
-    {"tokenGET", 1, {"Get"}},\
-    {"tokenPUT", 1, {"Put"}},\
-    {"tokenNAME", 1, {"Program"}},\
-    {"tokenBODY", 1, {"Begin"}},\
-    {"tokenDATA", 1, {"Var"}},\
-    {"tokenEND", 1, {"End"}},\
+    {"tokenRLBIND", 1, {"<<"}},\
+    {"tokenLRBIND", 1, {">>"}},\
+    {"tokenELSE", 1, {"ELSE"}},\
+    {"tokenIF", 1, {"IF"}},\
+    {"tokenDO", 1, {"DO"}},\
+    {"tokenFOR", 1, {"FOR"}},\
+    {"tokenTO", 1, {"TO"}},\
+    {"tokenWHILE", 1, {"WHILE"}},\
+    {"tokenCONTINUE", 1, {"CONTINUE"}},\
+    {"tokenEXIT", 1, {"EXIT"}},\
+    {"tokenREPEAT", 1, {"REPEAT"}},\
+    {"tokenUNTIL", 1, {"UNTIL"}},\
+    {"tokenGET", 1, {"GET"}},\
+    {"tokenPUT", 1, {"PUT"}},\
+    {"tokenNAME", 1, {"NAME"}},\
+    {"tokenBODY", 1, {"BODY"}},\
+    {"tokenDATA", 1, {"DATA"}},\
+    {"tokenEND", 1, {"END"}},\
     {"tokenSEMICOLON", 1, {";"}},\
 \
     {"value", 1, {"value_terminal"}},\
@@ -759,3 +764,9 @@ extern char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMEN
 },\
 176,\
 "program"
+
+///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////
+
+//#define DEFAULT_MODE (DEBUG_MODE | LEXICAL_ANALISIS_MODE)
+#define DEFAULT_MODE (DEBUG_MODE | LEXICAL_ANALYZE_MODE | SYNTAX_ANALYZE_MODE | SEMANTIX_ANALYZE_MODE | MAKE_ASSEMBLY | MAKE_BINARY)

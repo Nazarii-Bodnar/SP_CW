@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 // TODO: CHANGE BY fRESET() TO END
 /************************************************************
-* N.Kozak // Lviv'2024 // lex  +  rpn  +  MACHINECODEGEN!   *
+* N.Kozak // Lviv'2024-2025 // cw_sp2__2024_2025            *
 *                         file: generator.cpp               *
 *                                                  (draft!) *
 *************************************************************/
@@ -20,6 +20,8 @@
 #include "../../../src/include/config.h"
 #include "../../../src/include/generator/generator.h"
 #include "../../../src/include/lexica/lexica.h"
+#include "../../../src/include/syntax/syntax.h"
+#include "../../../src/include/semantix/semantix.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,7 +38,7 @@
 #define MAX_TEXT_SIZE 8192
 #define MAX_GENERATED_TEXT_SIZE (MAX_TEXT_SIZE * 6)
 #define GENERATED_TEXT_SIZE_ 32768
-#define GENERATED_TEXT_SIZE (MAX_TEXT_SIZE % MAX_GENERATED_TEXT_SIZE)
+//#define GENERATED_TEXT_SIZE (MAX_TEXT_SIZE % MAX_GENERATED_TEXT_SIZE) // ?
 
 
 #define SUCCESS_STATE 0
@@ -92,88 +94,10 @@ struct GotoPositionInfo* lastGotoPositionInfoInTable = gotoPositionsInfoTable; /
 
 //#include "src/include/generator/generator.h"
 
-unsigned char generatorMode = MACHINE_CODER_MODE;
+//unsigned char generatorMode = MACHINE_CODER_MODE;
 
 char* tokenStruct[MAX_TOKEN_STRUCT_ELEMENT_COUNT][MAX_TOKEN_STRUCT_ELEMENT_PART_COUNT] = { NULL };
 
-#if 0
-static void intitTokenStruct__OLD() {
-	//SET_QUADRUPLE_STR_MACRO_IN_ARRAY(tokenStruct, MULTI_TOKEN_BITWISE_NOT, ("~"), (""), (""), (""))
-	//
-	//	a12345_ptr = a12345;
-	//
-	tokenStruct[MULTI_TOKEN_BITWISE_NOT][0] = (char*)"~";
-	tokenStruct[MULTI_TOKEN_BITWISE_AND][0] = (char*)"&";
-	tokenStruct[MULTI_TOKEN_BITWISE_OR][0] = (char*)"|";
-	tokenStruct[MULTI_TOKEN_NOT][0] = (char*)"!";
-	tokenStruct[MULTI_TOKEN_AND][0] = (char*)"And";
-	tokenStruct[MULTI_TOKEN_OR][0] = (char*)"Or";
-
-	tokenStruct[MULTI_TOKEN_EQUAL][0] = (char*)"Eq";
-	tokenStruct[MULTI_TOKEN_NOT_EQUAL][0] = (char*)"Ne";
-	tokenStruct[MULTI_TOKEN_LESS][0] = (char*)"<<";
-	tokenStruct[MULTI_TOKEN_GREATER][0] = (char*)">>";
-	tokenStruct[MULTI_TOKEN_LESS_OR_EQUAL][0] = (char*)"<=";
-	tokenStruct[MULTI_TOKEN_GREATER_OR_EQUAL][0] = (char*)">=";
-
-	tokenStruct[MULTI_TOKEN_ADD][0] = (char*)"+";
-	tokenStruct[MULTI_TOKEN_SUB][0] = (char*)"-";
-	tokenStruct[MULTI_TOKEN_MUL][0] = (char*)"Mul";
-	tokenStruct[MULTI_TOKEN_DIV][0] = (char*)"Div";
-	tokenStruct[MULTI_TOKEN_MOD][0] = (char*)"Mod";
-
-	tokenStruct[MULTI_TOKEN_BIND_RIGHT_TO_LEFT][0] = (char*)"<-";
-	tokenStruct[MULTI_TOKEN_BIND_LEFT_TO_RIGHT][0] = (char*)"->";
-
-	tokenStruct[MULTI_TOKEN_COLON][0] = (char*)":";
-	tokenStruct[MULTI_TOKEN_GOTO][0] = (char*)"Goto";
-
-	tokenStruct[MULTI_TOKEN_IF][0] = (char*)"If"; tokenStruct[MULTI_TOKEN_IF][1] = (char*)"(";
-	//	tokenStruct[MULTI_TOKEN_IF_][0] = (char*)"IF"; // don't change this!
-	tokenStruct[MULTI_TOKEN_THEN][0] = (char*)")";
-	//	tokenStruct[MULTI_TOKEN_THEN_][0] = (char*)"NULL"; tokenStruct[MULTI_TOKEN_IF][1] = (char*)"STATEMENT"; // don't change this!
-	tokenStruct[MULTI_TOKEN_ELSE][0] = (char*)"else";
-
-
-	tokenStruct[MULTI_TOKEN_FOR][0] = (char*)"For";
-	tokenStruct[MULTI_TOKEN_TO][0] = (char*)"To";
-	tokenStruct[MULTI_TOKEN_DOWNTO][0] = (char*)"Downto";
-	tokenStruct[MULTI_TOKEN_DO][0] = (char*)"do"; // tokenStruct[MULTI_TOKEN_DO][1] = (char*)":";
-
-	//
-	tokenStruct[MULTI_TOKEN_WHILE][0] = (char*)"While";
-	tokenStruct[MULTI_TOKEN_CONTINUE_WHILE][0] = (char*)"Continue"; tokenStruct[MULTI_TOKEN_CONTINUE_WHILE][1] = (char*)"WHILE";
-	tokenStruct[MULTI_TOKEN_EXIT_WHILE][0] = (char*)"Exit"; tokenStruct[MULTI_TOKEN_EXIT_WHILE][1] = (char*)"WHILE";
-	tokenStruct[MULTI_TOKEN_END_WHILE][0] = (char*)"Finish"; tokenStruct[MULTI_TOKEN_END_WHILE][1] = (char*)"WHILE";
-	//
-
-	//
-	tokenStruct[MULTI_TOKEN_REPEAT][0] = (char*)"Repeat";
-	tokenStruct[MULTI_TOKEN_UNTIL][0] = (char*)"Until";
-	//
-
-	//
-	tokenStruct[MULTI_TOKEN_INPUT][0] = (char*)"Get";
-	tokenStruct[MULTI_TOKEN_OUTPUT][0] = (char*)"Put";
-	//
-
-	//
-	tokenStruct[MULTI_TOKEN_RLBIND][0] = (char*)"<-";
-	tokenStruct[MULTI_TOKEN_LRBIND][0] = (char*)"->";
-	//
-
-	tokenStruct[MULTI_TOKEN_SEMICOLON][0] = (char*)";";
-
-	tokenStruct[MULTI_TOKEN_BEGIN][0] = (char*)"begin";
-	tokenStruct[MULTI_TOKEN_END][0] = (char*)"end";
-
-	tokenStruct[MULTI_TOKEN_NULL_STATEMENT][0] = (char*)"NULL"; tokenStruct[MULTI_TOKEN_NULL_STATEMENT][1] = (char*)"STATEMENT";
-	//	NULL_STATEMENT null_statement
-	//		null statement
-		//return 0;
-}
-//char intitTokenStruct_ = (intitTokenStruct__OLD(), 0);
-#endif
 INIT_TOKEN_STRUCT_NAME(0);
 
 unsigned char detectMultiToken(struct LexemInfo* lexemInfoTable, enum TokenStructName tokenStructName) {
@@ -272,103 +196,138 @@ unsigned long long int getVariableOffset(char* identifierStr) {
 
 	return OUT_DATA_OFFSET;
 }
-//
 
-	//0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 , 0x20 ,
 unsigned char* outBytes2Code(unsigned char* currBytePtr, unsigned char* fragmentFirstBytePtr, unsigned long long int bytesCout) {
 	for (; bytesCout--; *currBytePtr++ = *fragmentFirstBytePtr++);
 	return currBytePtr;
 }
 
-unsigned char* makeEndProgramCode(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-	const unsigned char code__xor_eax_eax[] = { 0x33, 0xC0 };
-	const unsigned char code__ret[] = { 0xC3 };
+unsigned char* makeEndProgramCode(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		const unsigned char code__xor_eax_eax[] = { 0x33, 0xC0 };
+		const unsigned char code__ret[] = { 0xC3 };
 
-	currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__xor_eax_eax, 2);
-	currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__ret, 1);
+		currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__xor_eax_eax, 2);
+		currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__ret, 1);
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "imul ebp, 4\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "add esp, ebp\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "xor ebp, ebp;\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "    xor eax, eax\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ret\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "end start\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    return 0;\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "}");
+	}
+
+	return currBytePtr;
+}
+
+unsigned char* makeTitle(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		//
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, ".686\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, ".model flat, stdcall\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "option casemap : none\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "#define _CRT_SECURE_NO_WARNINGS\r\n\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, ".model flat, stdcall\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "option casemap : none\r\n");
+	}
+
+	return currBytePtr;
+}
+
+unsigned char* makeDependenciesDeclaration(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		//
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "GetStdHandle proto STDCALL, nStdHandle : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "ExitProcess proto STDCALL, uExitCode : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, ";MessageBoxA PROTO hwnd : DWORD, lpText : DWORD, lpCaption : DWORD, uType : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "ReadConsoleA proto STDCALL, hConsoleInput : DWORD, lpBuffer : DWORD, nNumberOfCharsToRead : DWORD, lpNumberOfCharsRead : DWORD, lpReserved : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "WriteConsoleA proto STDCALL, hConsoleOutput : DWORD, lpBuffert : DWORD, nNumberOfCharsToWrite : DWORD, lpNumberOfCharsWritten : DWORD, lpReserved : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "wsprintfA PROTO C : VARARG\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "GetConsoleMode PROTO STDCALL, hConsoleHandle:DWORD, lpMode : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "SetConsoleMode PROTO STDCALL, hConsoleHandle:DWORD, dwMode : DWORD\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "ENABLE_LINE_INPUT EQU 0002h\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "ENABLE_ECHO_INPUT EQU 0004h\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "#include \"stdio.h\"\r\n\r\n");
+	}
 
 #ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	//printf("imul ebp, 4\r\n");
-	//printf("add esp, ebp\r\n");
-	//printf("xor ebp, ebp;\r\n");
-
-	printf("    xor eax, eax\r\n");
-	printf("    ret\r\n");
-
-	printf("\r\n\r\n");
-
-	printf("end start\r\n");
-
-	printf("\r\n\r\n");
 
 #endif
 
 	return currBytePtr;
 }
 
-unsigned char* makeTitle(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-
-#ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf(".686\r\n");
-	printf(".model flat, stdcall\r\n");
-	printf("option casemap : none\r\n");
-#endif
-
-	return currBytePtr;
-}
-
-unsigned char* makeDependenciesDeclaration(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-
-#ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	printf("GetStdHandle proto STDCALL, nStdHandle : DWORD\r\n");
-	printf("ExitProcess proto STDCALL, uExitCode : DWORD\r\n");
-	printf(";MessageBoxA PROTO hwnd : DWORD, lpText : DWORD, lpCaption : DWORD, uType : DWORD\r\n");
-	printf("ReadConsoleA proto STDCALL, hConsoleInput : DWORD, lpBuffer : DWORD, nNumberOfCharsToRead : DWORD, lpNumberOfCharsRead : DWORD, lpReserved : DWORD\r\n");
-	printf("WriteConsoleA proto STDCALL, hConsoleOutput : DWORD, lpBuffert : DWORD, nNumberOfCharsToWrite : DWORD, lpNumberOfCharsWritten : DWORD, lpReserved : DWORD\r\n");
-	printf("wsprintfA PROTO C : VARARG\r\n");
-	printf("\r\n");
-	printf("GetConsoleMode PROTO STDCALL, hConsoleHandle:DWORD, lpMode : DWORD\r\n");
-	printf("\r\n");
-	printf("SetConsoleMode PROTO STDCALL, hConsoleHandle:DWORD, dwMode : DWORD\r\n");
-	printf("\r\n");
-	printf("ENABLE_LINE_INPUT EQU 0002h\r\n");
-	printf("ENABLE_ECHO_INPUT EQU 0004h\r\n");
-#endif
+unsigned char* makeDataSection(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		//
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, ".data\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    data_start db 8192 dup (0)\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;title_msg db \"Output:\", 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    valueTemp_msg db 256 dup(0)\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    valueTemp_fmt db \"%%d\", 10, 13, 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;NumberOfCharsWritten dd 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    hConsoleInput dd 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    hConsoleOutput dd 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    buffer db 128 dup(0)\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    readOutCount dd ?\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "int data[8192] = {0};\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "int contextStack[8192] = {0}, contextStackIndex = 0;\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "int opStack[8192] = {0}, opStackIndex = 0, opTemp = 0;\r\n"); 
+		currBytePtr += sprintf((char*)currBytePtr, "int lastBindDataIndex = 0;\r\n");
+	}
 
 	return currBytePtr;
 }
 
-unsigned char* makeDataSection(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-#ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	printf(".data\r\n");
-	printf("    data_start db 8192 dup (0)\r\n");
-	printf("    ;title_msg db \"Output:\", 0\r\n");
-	printf("    valueTemp_msg db 256 dup(0)\r\n");
-	printf("    valueTemp_fmt db \"%%d\", 10, 13, 0\r\n");
-	printf("    ;NumberOfCharsWritten dd 0\r\n");
-	printf("    hConsoleInput dd 0\r\n");
-	printf("    hConsoleOutput dd 0\r\n");
-	printf("    buffer db 128 dup(0)\r\n");
-	printf("    readOutCount dd ?\r\n");
-#endif
+unsigned char* makeBeginProgramCode(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		//
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, ".code\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "start:\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "int main() {\r\n");
+	}
 
 	return currBytePtr;
 }
 
-unsigned char* makeBeginProgramCode(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-#ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	printf(".code\r\n");
-	printf("start:\r\n");
-#endif
-
-	return currBytePtr;
-}
-
-unsigned char* makeInitCode(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
+unsigned char* makeInitCode(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
 	//	unsigned char code__call_NexInstructionLabel[]          = { 0xE8, 0x00, 0x00, 0x00, 0x00 };      
 	//	                                                                                                 
 	//	unsigned char code__pop_esi[]                           = { 0x5E };                              
@@ -390,132 +349,150 @@ unsigned char* makeInitCode(struct LexemInfo** lastLexemInfoInTable, unsigned ch
 	//	currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__mov_ecx_edi, 2);
 	//	currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__add_ecx_512, 6);
 
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		//
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    db 0E8h, 00h, 00h, 00h, 00h; call NexInstruction\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, ";NexInstruction:\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    pop esi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    sub esi, 5\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    mov edi, esi\r\n");//printf("    mov edi, offset data_start\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    add edi, 0%08Xh\r\n", (int)dataOffsetMinusCodeOffset);
+		//currBytePtr += sprintf((char*)currBytePtr, "    xor ebp, ebp\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    mov ecx, edi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    add ecx, 512\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    jmp initConsole\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "    putProc PROC\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push eax\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push offset valueTemp_fmt\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push offset valueTemp_msg\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        call wsprintfA\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        add esp, 12\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ;push 40h\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ;push offset title_msg\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ;push offset valueTemp_msg;\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ;push 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ;call MessageBoxA\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push 0; offset NumberOfCharsWritten\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push eax; NumberOfCharsToWrite\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push offset valueTemp_msg\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push hConsoleOutput\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        call WriteConsoleA\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ret\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    putProc ENDP\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n\r\n");
+
+		//currBytePtr += sprintf((char*)currBytePtr, "    getProc PROC\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push eax\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push offset valueTemp_fmt\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push offset valueTemp_msg\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        call wsprintfA\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        add esp, 12\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push 40h\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push offset title_msg\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push offset valueTemp_msg;\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        push 0\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        call MessageBoxA\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "        ret\r\n");
+		//currBytePtr += sprintf((char*)currBytePtr, "    getProc ENDP\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "    getProc PROC\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push ebp\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        mov ebp, esp\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push 0\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push offset readOutCount\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push 15\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push offset buffer + 1\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        push hConsoleInput\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        call ReadConsoleA\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        lea esi, offset buffer\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        add esi, readOutCount\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        sub esi, 2\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        call string_to_int\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        mov esp, ebp\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        pop ebp\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ret\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    getProc ENDP\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "    string_to_int PROC\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;  input: ESI - string\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ; output: EAX - value\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        xor eax, eax\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        mov ebx, 1\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        xor ecx, ecx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "convert_loop :\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        movzx ecx, byte ptr[esi]\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        test ecx, ecx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        jz done\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        sub ecx, '0'\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        imul ecx, ebx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        add eax, ecx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        imul ebx, ebx, 10\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        dec esi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        jmp convert_loop\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "done:\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "        ret\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    string_to_int ENDP\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+
+		currBytePtr += sprintf((char*)currBytePtr, "    initConsole:\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    push -10\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    call GetStdHandle\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    mov hConsoleInput, eax\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    push -11\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    call GetStdHandle\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    mov hConsoleOutput, eax\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    \r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push ecx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push ebx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push esi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push edi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push offset mode\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push hConsoleInput\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;call GetConsoleMode\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;mov ebx, eax\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;or ebx, ENABLE_LINE_INPUT \r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;or ebx, ENABLE_ECHO_INPUT\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push ebx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;push hConsoleInput\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;call SetConsoleMode\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;pop edi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;pop esi\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;pop ebx\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;pop ecx\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+	    //currBytePtr += sprintf((char*)currBytePtr, "    int data[8192] = {0};\r\n");
+	    //currBytePtr += sprintf((char*)currBytePtr, "    int contextStack[8192] = {0}, contextStackIndex = 0;\r\n");
+	    //currBytePtr += sprintf((char*)currBytePtr, "    int opStack[8192] = {0}, opStackIndex = 0, opTemp = 0;;\r\n");
+	    //currBytePtr += sprintf((char*)currBytePtr, "    int lastBindDataIndex = 0;\r\n");
+		//
+		currBytePtr += sprintf((char*)currBytePtr, "    contextStackIndex = 0;\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    opStackIndex = 0;\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    opTemp = 0;\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    lastBindDataIndex = 0;\r\n");
+	}
+
 #ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	printf("    db 0E8h, 00h, 00h, 00h, 00h; call NexInstruction\r\n");
-	printf(";NexInstruction:\r\n");
-	printf("    pop esi\r\n");
-	printf("    sub esi, 5\r\n");
-	printf("    mov edi, esi\r\n");//printf("    mov edi, offset data_start\r\n");
-	printf("    add edi, 0%08Xh\r\n", (int)dataOffsetMinusCodeOffset);
-	//printf("    xor ebp, ebp\r\n");
-	printf("    mov ecx, edi\r\n");
-	printf("    add ecx, 512\r\n");
-	printf("    jmp initConsole\r\n");
 
-	printf("    putProc PROC\r\n");
-	printf("        push eax\r\n");
-	printf("        push offset valueTemp_fmt\r\n");
-	printf("        push offset valueTemp_msg\r\n");
-	printf("        call wsprintfA\r\n");
-	printf("        add esp, 12\r\n");
-	printf("\r\n");
-	printf("        ;push 40h\r\n");
-	printf("        ;push offset title_msg\r\n");
-	printf("        ;push offset valueTemp_msg;\r\n");
-	printf("        ;push 0\r\n");
-	printf("        ;call MessageBoxA\r\n");
-	printf("\r\n");
-	printf("        push 0\r\n");
-	printf("        push 0; offset NumberOfCharsWritten\r\n");
-	printf("        push eax; NumberOfCharsToWrite\r\n");
-	printf("        push offset valueTemp_msg\r\n");
-	printf("        push hConsoleOutput\r\n");
-	printf("        call WriteConsoleA\r\n");
-	printf("\r\n");
-	printf("        ret\r\n");
-	printf("    putProc ENDP\r\n");
-
-	printf("\r\n\r\n");
-
-	//printf("    getProc PROC\r\n");
-	//printf("        push eax\r\n");
-	//printf("        push offset valueTemp_fmt\r\n");
-	//printf("        push offset valueTemp_msg\r\n");
-	//printf("        call wsprintfA\r\n");
-	//printf("        add esp, 12\r\n");
-	//printf("\r\n");
-	//printf("        push 40h\r\n");
-	//printf("        push offset title_msg\r\n");
-	//printf("        push offset valueTemp_msg;\r\n");
-	//printf("        push 0\r\n");
-	//printf("        call MessageBoxA\r\n");
-	//printf("\r\n");
-	//printf("        ret\r\n");
-	//printf("    getProc ENDP\r\n");
-
-	printf("    getProc PROC\r\n");
-	printf("        push ebp\r\n");
-	printf("        mov ebp, esp\r\n");
-	printf("\r\n");
-	printf("        push 0\r\n");
-	printf("        push offset readOutCount\r\n");
-	printf("        push 15\r\n");
-	printf("        push offset buffer + 1\r\n");
-	printf("        push hConsoleInput\r\n");
-	printf("        call ReadConsoleA\r\n");
-	printf("\r\n");
-	printf("        lea esi, offset buffer\r\n");
-	printf("        add esi, readOutCount\r\n");
-	printf("        sub esi, 2\r\n");
-	printf("        call string_to_int\r\n");
-	printf("\r\n");
-	printf("        mov esp, ebp\r\n");
-	printf("        pop ebp\r\n");
-	printf("        ret\r\n");
-	printf("    getProc ENDP\r\n");
-
-	printf("\r\n");
-
-	printf("    string_to_int PROC\r\n");
-	printf("    ;  input: ESI - string\r\n");
-	printf("    ; output: EAX - value\r\n");
-	printf("        xor eax, eax\r\n");
-	printf("        mov ebx, 1\r\n");
-	printf("        xor ecx, ecx\r\n");
-	printf("\r\n");
-	printf("convert_loop :\r\n");
-	printf("        movzx ecx, byte ptr[esi]\r\n");
-	printf("        test ecx, ecx\r\n");
-	printf("        jz done\r\n");
-	printf("        sub ecx, '0'\r\n");
-	printf("        imul ecx, ebx\r\n");
-	printf("        add eax, ecx\r\n");
-	printf("        imul ebx, ebx, 10\r\n");
-	printf("        dec esi\r\n");
-	printf("        jmp convert_loop\r\n");
-	printf("\r\n");
-	printf("done:\r\n");
-	printf("        ret\r\n");
-	printf("    string_to_int ENDP\r\n");
-
-	printf("\r\n");
-
-	printf("    initConsole:\r\n");
-	printf("    push -10\r\n");
-	printf("    call GetStdHandle\r\n");
-	printf("    mov hConsoleInput, eax\r\n");
-	printf("    push -11\r\n");
-	printf("    call GetStdHandle\r\n");
-	printf("    mov hConsoleOutput, eax\r\n");
-	printf("    \r\n");
-	printf("    ;push ecx\r\n");
-	printf("    ;push ebx\r\n");
-	printf("    ;push esi\r\n");
-	printf("    ;push edi\r\n");
-	printf("    ;push offset mode\r\n");
-	printf("    ;push hConsoleInput\r\n");
-	printf("    ;call GetConsoleMode\r\n");
-	printf("    ;mov ebx, eax\r\n");
-	printf("    ;or ebx, ENABLE_LINE_INPUT \r\n");
-	printf("    ;or ebx, ENABLE_ECHO_INPUT\r\n");
-	printf("    ;push ebx\r\n");
-	printf("    ;push hConsoleInput\r\n");
-	printf("    ;call SetConsoleMode\r\n");
-	printf("    ;pop edi\r\n");
-	printf("    ;pop esi\r\n");
-	printf("    ;pop ebx\r\n");
-	printf("    ;pop ecx\r\n");
 
 #endif
 
@@ -561,37 +538,55 @@ unsigned char* makeInitCode(struct LexemInfo** lastLexemInfoInTable, unsigned ch
 #include "../../../src/include/generator/semicolon.h"
 //
 
-unsigned char* initMake(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-	return currBytePtr;
-//	for (; (*lastLexemInfoInTable)->lexemStr[0] && strncmp((*lastLexemInfoInTable)->lexemStr, "BODY", MAX_LEXEM_SIZE); ++ * lastLexemInfoInTable);
-//	for (; (*lastLexemInfoInTable)->lexemStr[0] && strncmp((*lastLexemInfoInTable)->lexemStr, ";", MAX_LEXEM_SIZE); ++ * lastLexemInfoInTable);
-//	return currBytePtr;
-}
+unsigned char* initMake(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	//return currBytePtr;
+	unsigned long long int lastDataSectionLexemIndex = getDataSectionLastLexemIndex(*lastLexemInfoInTable, &grammar);
+	if(lastDataSectionLexemIndex == ~0) {
+		printf("Error: bad section!\r\n");
+		exit(0);
+	}
 
-unsigned char* makeSaveHWStack(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-	const unsigned char code__mov_ebp_esp[] = { 0x8B, 0xEC };
+	labelInfoTable.clear(); /* It's not pretty. TODO: change it. */
 
-	currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__mov_ebp_esp, 2);
-
-#ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	printf("    ;hw stack save(save esp)\r\n");
-	printf("    mov ebp, esp\r\n");
-
-#endif
-
+	*lastLexemInfoInTable += lastDataSectionLexemIndex;
 	return currBytePtr;
 }
 
-unsigned char* makeResetHWStack(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr) {
-	const unsigned char code__mov_esp_ebp[] = { 0x8B, 0xE5 };
+unsigned char* makeSaveHWStack(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		const unsigned char code__mov_ebp_esp[] = { 0x8B, 0xEC };
 
-	currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__mov_esp_ebp, 2);
+		currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__mov_ebp_esp, 2);
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;hw stack save(save esp)\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    mov ebp, esp\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		//
+	}
+
+	return currBytePtr;
+}
+
+unsigned char* makeResetHWStack(struct LexemInfo** lastLexemInfoInTable, unsigned char* currBytePtr, unsigned char generatorMode) {
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+		const unsigned char code__mov_esp_ebp[] = { 0x8B, 0xE5 };
+
+		currBytePtr = outBytes2Code(currBytePtr, (unsigned char*)code__mov_esp_ebp, 2);
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+		currBytePtr += sprintf((char*)currBytePtr, "\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    ;hw stack reset(restore esp)\r\n");
+		currBytePtr += sprintf((char*)currBytePtr, "    mov esp, ebp\r\n");
+	}
+	else if (generatorMode == C_CODER_MODE) {
+		//
+	}
 
 #ifdef DEBUG_MODE_BY_ASSEMBLY
-	printf("\r\n");
-	printf("    ;hw stack reset(restore esp)\r\n");
-	printf("    mov esp, ebp\r\n");
+
 
 #endif
 
@@ -618,22 +613,47 @@ unsigned char* createPattern() {
 	return NULL;
 }
 
-unsigned char* getCodeBytePtr(unsigned char* baseBytePtr) {
+unsigned char* getObjectCodeBytePtr(unsigned char* baseBytePtr, unsigned char generatorMode) {
+
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+
+	}
+	else if (generatorMode == C_CODER_MODE) {
+
+	}
+
+	return baseBytePtr + baseOperationObjectOffset;
+}
+
+unsigned char* getImageCodeBytePtr(unsigned char* baseBytePtr, unsigned char generatorMode) {
+
+	if (generatorMode == MACHINE_X86_WIN32_CODER_MODE) {
+
+	}
+	else if (generatorMode == ASSEMBLY_X86_WIN32_CODER_MODE) {
+
+	}
+	else if (generatorMode == C_CODER_MODE) {
+
+	}
 
 	return baseBytePtr + baseOperationOffset;
 }
 
-void makeCode(struct LexemInfo** lastLexemInfoInTable/*TODO:...*/, unsigned char* currBytePtr) { // TODO:...
-	currBytePtr = makeTitle(lastLexemInfoInTable, currBytePtr);
-	currBytePtr = makeDependenciesDeclaration(lastLexemInfoInTable, currBytePtr);
+unsigned char* makeCode(struct LexemInfo** lastLexemInfoInTable/*TODO:...*/, unsigned char* currBytePtr, unsigned char generatorMode) { // TODO:...
+	currBytePtr = makeTitle(lastLexemInfoInTable, currBytePtr, generatorMode);
+	currBytePtr = makeDependenciesDeclaration(lastLexemInfoInTable, currBytePtr, generatorMode);
 
-	currBytePtr = makeDataSection(lastLexemInfoInTable, currBytePtr);
+	currBytePtr = makeDataSection(lastLexemInfoInTable, currBytePtr, generatorMode);
 
-	currBytePtr = makeBeginProgramCode(lastLexemInfoInTable, currBytePtr);
+	currBytePtr = makeBeginProgramCode(lastLexemInfoInTable, currBytePtr, generatorMode);
 	lexemInfoTransformationTempStackSize = 0;
-	currBytePtr = makeInitCode(lastLexemInfoInTable, currBytePtr);
-	currBytePtr = initMake(lastLexemInfoInTable, currBytePtr);
-	currBytePtr = makeSaveHWStack(lastLexemInfoInTable, currBytePtr);
+	currBytePtr = makeInitCode(lastLexemInfoInTable, currBytePtr, generatorMode);
+	currBytePtr = initMake(lastLexemInfoInTable, currBytePtr, generatorMode);
+	currBytePtr = makeSaveHWStack(lastLexemInfoInTable, currBytePtr, generatorMode);
 	for (struct LexemInfo* lastLexemInfoInTable_; lastLexemInfoInTable_ = *lastLexemInfoInTable, (*lastLexemInfoInTable)->lexemStr[0] != '\0';) {
 
 		LABEL_GOTO_LABELE_CODER(lastLexemInfoInTable_, lastLexemInfoInTable, currBytePtr, generatorMode, NULL);
@@ -714,19 +734,21 @@ void makeCode(struct LexemInfo** lastLexemInfoInTable/*TODO:...*/, unsigned char
 
 	}
 
-	currBytePtr = makeResetHWStack(lastLexemInfoInTable, currBytePtr);
-	currBytePtr = makeEndProgramCode(lastLexemInfoInTable, currBytePtr);
+	currBytePtr = makeResetHWStack(lastLexemInfoInTable, currBytePtr, generatorMode);
+	currBytePtr = makeEndProgramCode(lastLexemInfoInTable, currBytePtr, generatorMode);
+
+	return currBytePtr;
 }
 
-unsigned char outCode[GENERATED_TEXT_SIZE] = { '\0' };
-void viewCode(unsigned char* outCodePtr, size_t outCodePrintSize, unsigned char align) {
+//unsigned char outCode[GENERATED_TEXT_SIZE] = { '\0' };
+void viewCode(unsigned char* outCodePtr, unsigned long long int outCodePrintSize, unsigned char align) {
 	printf("\r\n;            +0x0 +0x1 +0x2 +0x3 +0x4 +0x5 +0x6 +0x7 +0x8 +0x9 +0xA +0xB +0xC +0xD +0xE +0xF ");
 	printf("\r\n;0x00000000: ");
-	size_t outCodePrintIndex = outCodePrintSize - 1;
-	for (size_t index = 0; index <= outCodePrintIndex;) {
+	unsigned long long int outCodePrintIndex = outCodePrintSize - 1;
+	for (unsigned long long int index = 0; index <= outCodePrintIndex;) {
 		printf("0x%02X ", outCodePtr[index]);
 		if (!(++index % align)) {
-			size_t indexMinus16 = index - align;
+			unsigned long long int indexMinus16 = index - align;
 			do {
 				//printf("0x%02X ", outCodePtr[index]);
 				if (outCodePtr[indexMinus16] >= 32 && outCodePtr[indexMinus16] <= 126) {
