@@ -1,0 +1,16 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/cw_sp2__2024_2025/Debug
+/cw_sp2__2024_2025/Release
+/cw_sp2__2024_2025/x64/Debug
+/cw_sp2__2024_2025/x64/Release
+/Debug
+/Release
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite
+/.vs/ProjectSettings.json
+/verify_syntax_by_EBNF/verify_syntax_by_EBNF.vcxproj
+/x64
+/.vs
